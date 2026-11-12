@@ -1,0 +1,33 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "eggy-veg-rice",
+  name: "15-Minute Eggy Veg Rice",
+  meal: "Lunch / dinner",
+  tags: ["quick"],
+  allergens: ["egg"],
+  servings: 1, servingLabel: "plate",
+  time: "15 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2026/02/speedy-eggy-veg-rice/" },
+  ingredients: [
+    { k: "olive_oil", q: 1, u: "tsp", t: "oil" },
+    { k: "green_onion", q: 2, u: "each", t: "green onions, sliced (or 1 tbsp chopped onion)" },
+    { k: "red_pepper", q: 0.5, u: "each", t: "red bell pepper, finely chopped" },
+    { k: "carrot", q: 0.5, u: "each", t: "carrot, finely chopped" },
+    { k: "broccoli", q: 50, u: "g", t: "(½ cup) broccoli, finely chopped" },
+    { k: "black_beans", q: 2, u: "tbsp", t: "canned beans or lentils, rinsed" },
+    { k: "cumin", q: 0.5, u: "tsp", t: "mild spice: cumin, smoked paprika or curry powder", opt: true },
+    { k: "eggs", q: 2, u: "each", t: "large eggs, beaten" },
+    { k: "rice_brown", q: 1, u: "cup", t: "cooked brown rice (leftover is perfect)", shop: { q: 60, u: "g" } },
+  ],
+  steps: [
+    "Heat the oil in a frying pan over medium heat. Soften the onion for about 2 minutes.",
+    "Add the chopped veg and cook 8–10 minutes until soft. If it's still firm, add a splash of water, cover, and let it steam.",
+    "Stir in the beans and spice, then the rice, and heat through.",
+    "Pour in the egg and stir gently for 1–2 minutes until just set.",
+  ],
+  storage: "Best fresh. Cool leftover rice quickly and use it within a day.",
+  kidNotes: "Make sure the egg is fully set for the kids. No rice? Use diced cooked potato. Red pepper and broccoli give lots of vitamin C to help absorb the iron from the eggs and beans.",
+  kidPortion: 0.5, kidPortionLabel: "½ plate",
+  nutrition: { basis: "estimate", kcal: 490, protein: 22, carbs: 64, fat: 16, fibre: 9.5, iron: 5, vitC: 90,
+    note: "The source doesn't give servings. We treated the recipe as one adult plate, or two toddler plates." },
+});

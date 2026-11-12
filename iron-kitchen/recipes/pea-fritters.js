@@ -1,0 +1,32 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "pea-fritters",
+  name: "Cheesy Pea Fritters",
+  meal: "Snack",
+  tags: ["freezer", "quick"],
+  allergens: ["egg", "milk", "wheat"],
+  servings: 6, servingLabel: "small fritters",
+  time: "15 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2026/05/easy-pea-fritters/" },
+  ingredients: [
+    { k: "peas", q: 0.67, u: "cup", t: "frozen peas (100 g)" },
+    { k: "eggs", q: 1, u: "each", t: "egg" },
+    { k: "flour", q: 2, u: "tbsp", t: "all-purpose flour", shop: { q: 16, u: "g" } },
+    { k: "cheese", q: 40, u: "g", t: "(⅓ cup) grated cheddar" },
+    { k: "olive_oil", q: 1, u: "tbsp", t: "oil for frying" },
+    { k: "yogurt", q: 2, u: "tbsp", t: "plain yogurt (dip)", opt: true },
+    { k: "parsley", q: 1, u: "tbsp", t: "chopped parsley, chives or mint (dip)", opt: true, shop: { q: 0.25, u: "bunch" } },
+  ],
+  steps: [
+    "Boil the peas for 2–3 minutes until soft. Drain well and let them cool a little.",
+    "Mash the peas with a fork; some texture is fine.",
+    "Mix in the egg, flour and cheese to make a thick batter.",
+    "Heat the oil in a non-stick pan over medium heat. Add spoonfuls and flatten them gently.",
+    "Cook 2–3 minutes per side until golden and set in the middle. Cool slightly before serving.",
+    "Optional dip: stir the herbs and a squeeze of lemon into the yogurt.",
+  ],
+  storage: "Make a double batch and freeze extras (source). Reheat in a toaster or a dry pan.",
+  kidNotes: "Cut into finger-sized strips for the 15-month-old. The 4-year-old can dip. The yogurt dip adds calcium, but keep dairy modest at iron-focused meals.",
+  kidPortion: 2, kidPortionLabel: "2 fritters",
+  nutrition: { basis: "estimate", kcal: 72, protein: 3.7, carbs: 4.5, fat: 4.3, fibre: 0.8, iron: 0.5, vitC: 2 },
+});

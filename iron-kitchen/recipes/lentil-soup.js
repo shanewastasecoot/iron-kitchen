@@ -1,0 +1,32 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "lentil-soup",
+  name: "Lentil & Veggie Soup",
+  meal: "Lunch / dinner",
+  tags: ["freezer"],
+  allergens: [],
+  servings: 8, servingLabel: "servings",
+  time: "55 min",
+  source: { name: "Boston Children's Hospital (PEHC)", url: "https://www.childrenshospital.org/sites/default/files/2023-03/pehc-iron-rich-recipes.pdf" },
+  ingredients: [
+    { k: "olive_oil", q: 2, u: "tbsp", t: "olive oil" },
+    { k: "onion", q: 1, u: "cup", t: "onion, finely chopped", shop: { q: 1, u: "each" } },
+    { k: "carrot", q: 0.5, u: "cup", t: "carrot, finely chopped", shop: { q: 1, u: "each" } },
+    { k: "celery", q: 0.5, u: "cup", t: "celery, finely chopped", shop: { q: 1, u: "stalk" } },
+    { k: "lentils_dry", q: 500, u: "g", t: "dried lentils, rinsed" },
+    { k: "tomato", q: 1, u: "cup", t: "tomato, diced", shop: { q: 1, u: "each" } },
+    { k: "veg_broth", q: 2, u: "cup", t: "vegetable broth (low sodium)" },
+  ],
+  steps: [
+    "Warm the oil in a large pot over medium heat. Cook the onion, carrot and celery for 5–7 minutes until soft.",
+    "Stir in the tomato, broth and rinsed lentils.",
+    "Bring to a boil, then turn down to a simmer. Cover and cook for about 40 minutes, until the lentils are very soft.",
+    "If it gets too thick, add water. 2 cups of broth to 500 g of lentils makes a very thick soup, so expect to add some.",
+    "Leave chunky, or blend for a smooth, creamy soup (easier for the little one).",
+  ],
+  storage: "Fridge: 4 days. Freezer: about 3 months in portions. Lentil soup thickens as it sits, so add water when reheating.",
+  kidNotes: "Blend some or all of it for the 15-month-old. Low-sodium broth keeps the salt down. Serve with something rich in vitamin C, such as red pepper strips or orange slices.",
+  kidPortion: 0.5, kidPortionLabel: "½ serving",
+  nutrition: { basis: "estimate", kcal: 260, protein: 15, carbs: 41, fat: 4, fibre: 7, iron: 5, vitC: 3,
+    note: "The source says 5 mg iron per serving, which matches our estimate (≈4.7 mg)." },
+});

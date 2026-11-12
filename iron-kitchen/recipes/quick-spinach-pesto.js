@@ -1,0 +1,31 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "quick-spinach-pesto",
+  name: "Quick Spinach & Chickpea Pesto Pasta",
+  meal: "Lunch / dinner",
+  tags: ["quick"],
+  allergens: ["wheat", "milk (if cheese)"],
+  servings: 1, servingLabel: "kid plate",
+  time: "10 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2021/05/quick-spinach-pesto/" },
+  ingredients: [
+    { k: "spinach", q: 1, u: "cup", t: "spinach (a handful)", shop: { q: 30, u: "g" } },
+    { k: "chickpeas", q: 0.25, u: "cup", t: "canned chickpeas, drained (a handful)" },
+    { k: "garlic", q: 0.25, u: "clove", t: "garlic, chopped" },
+    { k: "olive_oil", q: 2, u: "tsp", t: "olive oil, plus extra to blend" },
+    { k: "pasta_ww", q: 40, u: "g", t: "dry pasta (our amount for a kid plate)" },
+    { k: "cheese", q: 5, u: "g", t: "grated cheese to sprinkle", opt: true },
+  ],
+  steps: [
+    "Cook the pasta.",
+    "Meanwhile fry the garlic in the oil for a couple of minutes.",
+    "Add the spinach and chickpeas and cook until the spinach wilts.",
+    "Blend, adding a little more oil or water until it's a smooth sauce.",
+    "Toss with the drained pasta. Sprinkle with cheese if you like.",
+  ],
+  storage: "Pesto keeps 2–3 days in the fridge. Freeze extra in an ice-cube tray (our suggestion).",
+  kidNotes: "Also works spread on toast or as a dip for potato wedges. Pick no-salt-added chickpeas. Serve with fruit for vitamin C. This sauce is nut-free and egg-free.",
+  kidPortion: 1, kidPortionLabel: "1 plate",
+  nutrition: { basis: "estimate", kcal: 273, protein: 9, carbs: 38, fat: 11, fibre: 6.7, iron: 2.7, vitC: 5,
+    note: "The source doesn't give amounts for the oil or pasta; we used 2 tsp oil and 40 g pasta." },
+});

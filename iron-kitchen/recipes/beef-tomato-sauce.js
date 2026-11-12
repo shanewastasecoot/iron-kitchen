@@ -1,0 +1,33 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "beef-tomato-sauce",
+  name: "Batch Beef & Tomato Sauce",
+  meal: "Lunch / dinner",
+  tags: ["freezer"],
+  allergens: [],
+  servings: 8, servingLabel: "servings",
+  time: "45 min",
+  source: { name: "SR Nutrition (Dr Pippa Gibson)", url: "https://www.srnutrition.co.uk/2021/04/easy-beef-and-tomato-sauce/" },
+  ingredients: [
+    { k: "onion", q: 2, u: "each", t: "large onions" },
+    { k: "celery", q: 3, u: "stalk", t: "celery" },
+    { k: "garlic", q: 4, u: "clove", t: "garlic" },
+    { k: "olive_oil", q: 1.5, u: "tbsp", t: "olive oil" },
+    { k: "ground_beef", q: 500, u: "g", t: "lean ground beef" },
+    { k: "canned_tomatoes", q: 796, u: "ml", t: "diced tomatoes (2 × 398 mL cans)" },
+    { k: "tomato_paste", q: 2, u: "tbsp", t: "tomato paste" },
+    { k: "mushrooms", q: 150, u: "g", t: "mushrooms" },
+  ],
+  steps: [
+    "Blitz the onions, celery and garlic in a food processor until fine.",
+    "Cook in the oil in a large pot for 5 minutes.",
+    "Chop or blitz the mushrooms, add them, and cook until the pan is fairly dry.",
+    "Push the veg to the edges, put the beef in the middle and let it sear, then flip and brown the other side. Break it up.",
+    "Stir in the tomato paste and tomatoes. Simmer 30 minutes.",
+  ],
+  storage: "Made for batch cooking and freezing (source). Our suggestion: freeze in portions for up to 3 months.",
+  kidNotes: "Beef has the most easily absorbed kind of iron (heme). Use it as pasta sauce (add peas), chili, shepherd's pie or lasagna. Vegetarian swap from the source: 250 g dry lentils, or 150 g dried soy mince plus 350 mL extra water.",
+  kidPortion: 0.5, kidPortionLabel: "½ serving",
+  nutrition: { basis: "estimate", kcal: 216, protein: 14, carbs: 13, fat: 12, fibre: 3, iron: 2.5, vitC: 17,
+    note: "Sauce only; pasta adds about 1–2 mg iron per serving." },
+});

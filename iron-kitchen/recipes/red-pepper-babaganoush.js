@@ -1,0 +1,33 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "red-pepper-babaganoush",
+  name: "Red Pepper & Lentil Babaganoush",
+  meal: "Snack",
+  tags: [],
+  allergens: [],
+  servings: 8, servingLabel: "¼-cup portions",
+  time: "35 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2024/08/iron-rich-dips-for-babies-and-toddlers/" },
+  ingredients: [
+    { k: "red_pepper", q: 1, u: "each", t: "red bell pepper" },
+    { k: "eggplant", q: 1, u: "each", t: "medium eggplant" },
+    { k: "lentils_canned", q: 1.75, u: "cup", t: "canned lentils, drained (1 × 540 mL can)" },
+    { k: "lemon", q: 0.5, u: "each", t: "lemon, juiced" },
+    { k: "parsley", q: 0.5, u: "cup", t: "flat-leaf parsley leaves (a handful)", shop: { q: 0.5, u: "bunch" } },
+    { k: "olive_oil", q: 2, u: "tbsp", t: "olive oil" },
+    { k: "garlic", q: 1, u: "clove", t: "garlic, crushed" },
+    { k: "cumin", q: 1, u: "pinch", t: "ground cumin" },
+    { k: "coriander_ground", q: 1, u: "pinch", t: "ground coriander" },
+    { k: "tomato_paste", q: 1, u: "tbsp", t: "tomato paste" },
+  ],
+  steps: [
+    "Heat a grill pan or large frying pan on high. Cook the whole eggplant and pepper, turning often, for 15–20 minutes until soft and a bit charred. (Our alternative: roast at 425 °F / 220 °C for about 30 minutes.)",
+    "Let them cool until you can handle them.",
+    "Peel the eggplant and throw away the skin. Remove the pepper seeds. Roughly chop both.",
+    "Pulse in a food processor with the lentils, lemon juice, parsley, oil, garlic, spices and tomato paste until combined.",
+  ],
+  storage: "Fridge: up to 2 days (source).",
+  kidNotes: "One of the best dips here for iron, and it brings its own vitamin C from the pepper. Blend fully smooth for the 15-month-old. Serve with pita strips or toast.",
+  kidPortion: 1, kidPortionLabel: "¼ cup",
+  nutrition: { basis: "estimate", kcal: 95, protein: 4.2, carbs: 12.4, fat: 3.6, fibre: 4.6, iron: 1.3, vitC: 19 },
+});

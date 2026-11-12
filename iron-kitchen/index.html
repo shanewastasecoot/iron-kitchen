@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#b4432f">
+<title>Iron Kitchen</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root {
+  --bg: #faf6f1; --surface: #ffffff; --surface-2: #f3ece4; --text: #2a211c; --muted: #75685f;
+  --line: #e6dcd2; --accent: #b4432f; --accent-text: #ffffff; --accent-soft: #f7e3dd;
+  --good: #2f7a4f; --good-soft: #e1f1e6; --warn-soft: #fff4d6; --warn-text: #6b5200;
+  --shadow: 0 1px 2px rgba(60,40,20,.06), 0 2px 8px rgba(60,40,20,.06);
+  --radius: 14px; --nav-h: 64px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1613; --surface: #241f1b; --surface-2: #2e2823; --text: #f1e9e2; --muted: #b0a297;
+    --line: #3a332d; --accent: #e0745d; --accent-text: #1a1613; --accent-soft: #3d2620;
+    --good: #6fc394; --good-soft: #1f3328; --warn-soft: #3a3014; --warn-text: #f0d68a;
+    --shadow: none; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+}
+button { font: inherit; color: inherit; }
+a { color: var(--accent); }
+.wrap { max-width: 680px; margin: 0 auto; padding: 0 16px; }
+
+/* Top bar */
+.topbar { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.topbar .wrap { display: flex; align-items: center; gap: 8px; min-height: 56px; }
+.topbar h1 { font-size: 1.2rem; margin: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.iconbtn { background: none; border: 0; min-width: 44px; min-height: 44px; border-radius: 22px; display: grid; place-items: center; cursor: pointer; font-size: 1.3rem; }
+.iconbtn:active { background: var(--surface-2); }
+
+/* Bottom nav */
+nav.bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+nav.bottom .wrap { display: grid; grid-template-columns: repeat(3, 1fr); padding: 0; }
+nav.bottom a { display: flex; flex-direction: column; align-items: center; justify-content: center; height: var(--nav-h); text-decoration: none; color: var(--muted); font-size: .78rem; font-weight: 600; position: relative; }
+nav.bottom a .ico { font-size: 1.35rem; line-height: 1.2; }
+nav.bottom a.active { color: var(--accent); }
+.badge { position: absolute; top: 8px; left: calc(50% + 8px); background: var(--accent); color: var(--accent-text); border-radius: 10px; min-width: 20px; height: 20px; padding: 0 6px; font-size: .72rem; display: grid; place-items: center; }
+
+/* Search + filters */
+.search { width: 100%; margin: 12px 0 8px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 1rem; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 10px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 14px; min-height: 40px; font-size: .9rem; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
+/* Cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin: 10px 0; overflow: hidden; }
+.rcard { display: grid; grid-template-columns: 1fr auto; }
+.rcard .main { padding: 14px 6px 14px 14px; text-decoration: none; color: inherit; display: block; }
+.rcard h3 { margin: 0 0 2px; font-size: 1.05rem; line-height: 1.3; }
+.meta { color: var(--muted); font-size: .85rem; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pill { font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); font-weight: 600; }
+.pill.iron { background: var(--accent-soft); color: var(--accent); }
+.pill.vc { background: var(--warn-soft); color: var(--warn-text); }
+.rcard .side { display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 6px; border-left: 1px solid var(--line); }
+.fav { font-size: 1.4rem; color: var(--muted); }
+.fav[aria-pressed="true"] { color: var(--accent); }
+.addbtn { min-width: 52px; min-height: 44px; border-radius: 10px; border: 1.5px solid var(--accent); background: none; color: var(--accent); font-weight: 700; font-size: .8rem; cursor: pointer; padding: 0 6px; }
+.addbtn[aria-pressed="true"] { background: var(--good); border-color: var(--good); color: #fff; }
+
+.tips { padding: 0 14px; }
+.tips summary { padding: 12px 0; cursor: pointer; font-weight: 600; list-style: none; }
+.tips summary::-webkit-details-marker { display: none; }
+.tips summary::after { content: " ▾"; color: var(--muted); }
+.tips ul { margin: 0 0 12px; padding-left: 20px; font-size: .92rem; }
+.tips li { margin-bottom: 6px; }
+
+[hidden] { display: none !important; }
+.empty { text-align: center; color: var(--muted); padding: 48px 16px; }
+
+/* Detail */
+.detail h2 { font-size: 1.45rem; line-height: 1.25; margin: 16px 0 4px; }
+.section { padding: 14px; }
+.section h4 { margin: 0 0 10px; font-size: 1rem; }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); font-size: 1.3rem; cursor: pointer; }
+.stepper output { min-width: 3.2em; text-align: center; font-weight: 700; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+ul.ing { list-style: none; margin: 0; padding: 0; }
+ul.ing li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+ul.ing li:last-child { border-bottom: 0; }
+ul.ing .q { font-weight: 700; }
+.opt { color: var(--muted); font-size: .85rem; }
+ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: s; }
+ol.steps li { counter-increment: s; position: relative; padding: 10px 0 10px 40px; border-bottom: 1px solid var(--line); cursor: pointer; }
+ol.steps li:last-child { border-bottom: 0; }
+ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 10px; width: 28px; height: 28px; border-radius: 14px; background: var(--accent-soft); color: var(--accent); font-weight: 700; display: grid; place-items: center; font-size: .85rem; }
+ol.steps li.done { color: var(--muted); text-decoration: line-through; }
+ol.steps li.done::before { content: "✓"; background: var(--good-soft); color: var(--good); }
+.note { background: var(--warn-soft); color: var(--warn-text); border-radius: 12px; padding: 12px 14px; font-size: .92rem; }
+.kid { background: var(--good-soft); border-radius: 12px; padding: 12px 14px; font-size: .92rem; }
+.kid strong { color: var(--good); }
+.ngrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ngrid div { background: var(--surface-2); border-radius: 10px; padding: 8px; text-align: center; }
+.ngrid b { display: block; font-size: 1.05rem; }
+.ngrid span { font-size: .75rem; color: var(--muted); }
+.ngrid .hi { background: var(--accent-soft); }
+.ngrid .hi b { color: var(--accent); }
+.small { font-size: .82rem; color: var(--muted); }
+.actionbar { position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); z-index: 9; background: var(--bg); border-top: 1px solid var(--line); }
+.actionbar .wrap { display: flex; gap: 10px; padding-top: 10px; padding-bottom: 10px; }
+.btn { flex: 1; min-height: 48px; border-radius: 12px; border: 1.5px solid var(--accent); background: var(--surface); color: var(--accent); font-weight: 700; cursor: pointer; font-size: .98rem; }
+.btn.primary { background: var(--accent); color: var(--accent-text); }
+.btn.done { background: var(--good); border-color: var(--good); color: #fff; }
+.btn:disabled { opacity: .5; }
+.spacer { height: 80px; }
+
+/* Shopping list */
+.plan-item { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.plan-item:last-child { border-bottom: 0; }
+.plan-item .name { flex: 1; font-weight: 600; line-height: 1.3; }
+.plan-item .name small { display: block; font-weight: 400; color: var(--muted); }
+.aisle { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 4px 4px; font-weight: 700; }
+.shop-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--line); cursor: pointer; min-height: 52px; }
+.shop-row:last-child { border-bottom: 0; }
+.box { flex: none; width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--muted); margin-top: 1px; display: grid; place-items: center; font-size: .85rem; }
+.shop-row.have .box { background: var(--good); border-color: var(--good); color: #fff; }
+.shop-row.have .txt { text-decoration: line-through; color: var(--muted); }
+.shop-row .txt { flex: 1; }
+.shop-row .qty { font-weight: 700; }
+.shop-row .for { display: block; font-size: .78rem; color: var(--muted); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 90px + env(safe-area-inset-bottom)); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: .9rem; z-index: 20; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; }
+.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 600; cursor: pointer; padding: 8px 0; min-height: 44px; }
+</style>
+</head>
+<body>
+<header class="topbar"><div class="wrap" id="topbar"></div></header>
+<main class="wrap" id="app"></main>
+<div id="actionbar"></div>
+<nav class="bottom"><div class="wrap">
+  <a href="#/" data-nav="recipes"><span class="ico">🍲</span>Recipes</a>
+  <a href="#/fav" data-nav="fav"><span class="ico">♥</span>Favourites</a>
+  <a href="#/list" data-nav="list"><span class="ico">🛒</span>List<span class="badge" id="listBadge" hidden></span></a>
+</div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="data/catalog.js"></script>
+<script src="recipes/index.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

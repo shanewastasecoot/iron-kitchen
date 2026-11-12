@@ -1,0 +1,32 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "green-pesto",
+  name: "Ultimate Green Pesto",
+  meal: "Lunch / dinner",
+  tags: ["no-cook", "freezer"],
+  allergens: ["tree nuts", "milk"],
+  servings: 8, servingLabel: "2-tbsp portions",
+  time: "10 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2025/11/the-ultimate-green-pesto-with-all-the-added-extras/" },
+  ingredients: [
+    { k: "spinach", q: 1, u: "cup", t: "packed spinach (a large handful)", shop: { q: 30, u: "g" } },
+    { k: "basil", q: 1, u: "cup", t: "packed fresh basil (a large handful)", shop: { q: 1, u: "bunch" } },
+    { k: "arugula", q: 0.5, u: "cup", t: "arugula (a handful)", shop: { q: 20, u: "g" } },
+    { k: "peas", q: 0.33, u: "cup", t: "peas, cooked or thawed (50 g)" },
+    { k: "garlic", q: 1, u: "clove", t: "garlic (small)" },
+    { k: "walnuts", q: 0.25, u: "cup", t: "walnuts (30 g)" },
+    { k: "flax", q: 2, u: "tbsp", t: "ground flaxseed" },
+    { k: "cheese", q: 30, u: "g", t: "cheddar" },
+    { k: "olive_oil", q: 4, u: "tbsp", t: "extra virgin olive oil (4–5 tbsp)" },
+  ],
+  steps: [
+    "Thaw the peas in hot water for a minute, then drain.",
+    "Put everything in a food processor and blend to the texture you like.",
+    "Loosen with more oil, or a splash of water.",
+    "No arugula? Use more spinach. No spinach? Use more basil or frozen greens.",
+  ],
+  storage: "Freezes brilliantly (source): freeze in an ice-cube tray, then thaw only the cubes you need.",
+  kidNotes: "Blend fully smooth for the 15-month-old. The walnuts are ground, so they aren't a choking risk. Stir through pasta, spread on toast, or use as a dip. Pasta adds most of the iron in the meal.",
+  kidPortion: 1, kidPortionLabel: "2 tbsp",
+  nutrition: { basis: "estimate", kcal: 116, protein: 2.4, carbs: 2.3, fat: 11.3, fibre: 1.2, iron: 0.55, vitC: 2.5 },
+});

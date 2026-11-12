@@ -1,0 +1,33 @@
+// Recipe: see README.md "Adding a recipe" for field meanings.
+addRecipe({
+  id: "spinach-fritters",
+  name: "Spinach Fritters",
+  meal: "Snack",
+  tags: ["freezer", "quick"],
+  allergens: ["egg", "milk", "wheat"],
+  servings: 6, servingLabel: "fritters",
+  time: "15 min",
+  source: { name: "SR Nutrition", url: "https://www.srnutrition.co.uk/2021/03/spinach-fritter-recipe/" },
+  ingredients: [
+    { k: "spinach", q: 1, u: "cup", t: "packed spinach (a large handful)", shop: { q: 30, u: "g" } },
+    { k: "carrot", q: 1, u: "each", t: "medium carrot, grated" },
+    { k: "eggs", q: 1, u: "each", t: "egg" },
+    { k: "garlic", q: 1, u: "clove", t: "garlic" },
+    { k: "baking_powder", q: 0.5, u: "tsp", t: "baking powder" },
+    { k: "flour", q: 50, u: "g", t: "(⅓ cup + 1 tbsp) all-purpose flour, plus extra if runny" },
+    { k: "milk", q: 50, u: "ml", t: "(3 tbsp) milk of choice" },
+    { k: "cumin", q: 1, u: "pinch", t: "spice: cumin, turmeric or mild curry powder" },
+    { k: "olive_oil", q: 1, u: "tbsp", t: "oil for frying" },
+  ],
+  steps: [
+    "Blend everything except the oil until smooth. A food processor gives a chunkier batter, which is fine too.",
+    "Too thin? Add more flour, up to about 50 g extra. Too thick? Add a splash of milk.",
+    "Heat a little oil in a frying pan over medium heat. Drop in spoonfuls of batter.",
+    "Cook about 2 minutes until browned underneath, flip, and cook the other side. Repeat with the rest.",
+  ],
+  storage: "Freezes well (source). Our suggestion: freeze flat, up to 2 months; reheat in a toaster or a dry pan.",
+  kidNotes: "Great finger food for the 15-month-old: cut into strips. Serve plain, with hummus, or with a thin spread of peanut butter. Swap the carrot for zucchini or onion.",
+  kidPortion: 2, kidPortionLabel: "2 fritters",
+  nutrition: { basis: "estimate", kcal: 63, protein: 2.5, carbs: 8, fat: 2.3, fibre: 0.7, iron: 0.7, vitC: 2,
+    note: "Canadian all-purpose flour is iron-enriched by law, which supplies about half the iron here." },
+});
