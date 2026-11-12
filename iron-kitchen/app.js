@@ -18,14 +18,56 @@ const state = {
   keepUrl: store.get("keepUrl", ""),   // link to the family's shared Keep grocery note (this phone only)
   keepEditing: false,
   theme: store.get("theme", "auto"),    // "auto" | "light" | "dark" (this phone only)
-  filters: { meal: "All", toggles: new Set(), q: "" },
+  filters: (() => { const f = store.get("filters", {}); return { meal: f.meal || "All", toggles: new Set(f.toggles || []), q: "" }; })(),
+  staples: store.get("staples", {}),    // { itemKey: true/false } overrides of the catalogue's "staple" flag
+  staplesOpen: false,
+  ironLog: store.get("ironLog", { day: "", entries: [] }), // today's toddler portions: [{ id, name, mg }]
+  ironGoal: store.get("ironGoal", 7),   // mg/day: 7 (age 1–3) or 10 (age 4–8)
+  cookMode: false,
+  doneSteps: {},                        // recipeId -> Set of ticked step numbers
   detailServings: {},                   // recipeId -> servings shown on detail page
 };
 const save = () => {
   store.set("favs", [...state.favs]);
   store.set("plan", state.plan);
   store.set("have", state.have);
+  store.set("filters", { meal: state.filters.meal, toggles: [...state.filters.toggles] });
+  store.set("staples", state.staples);
+  store.set("ironLog", state.ironLog);
+  store.set("ironGoal", state.ironGoal);
 };
+const isStaple = k => (k in state.staples ? state.staples[k] : !!(ITEMS[k] && ITEMS[k].staple));
+
+/* ---------- Iron today ---------- */
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function ironToday() {
+  if (state.ironLog.day !== todayKey()) state.ironLog = { day: todayKey(), entries: [] };
+  return state.ironLog.entries;
+}
+const ironTotal = () => Math.round(ironToday().reduce((s, e) => s + e.mg, 0) * 10) / 10;
+const kidIronOf = r => (r.nutrition && typeof r.nutrition.iron === "number" ? Math.round(r.nutrition.iron * r.kidPortion * 10) / 10 : null);
+
+/* ---------- Cook mode (keep the screen on) ---------- */
+const canWake = "wakeLock" in navigator;
+let wakeLock = null;
+async function setCookMode(on) {
+  state.cookMode = on;
+  if (on && !wakeLock) {
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } catch { state.cookMode = false; toast("This phone won't let the app keep the screen on."); render(); }
+  } else if (!on && wakeLock) {
+    wakeLock.release().catch(() => {}); wakeLock = null;
+  }
+}
+// The phone drops the lock when you switch apps; take it back when you return.
+document.addEventListener("visibilitychange", () => {
+  if (state.cookMode && document.visibilityState === "visible") setCookMode(true);
+});
 
 let byId = {};
 
@@ -122,7 +164,7 @@ function buildShoppingList() {
     }
     const qty = texts.join(" + ") + (packText ? ` — ${packText}` : "");
     const buy = packText || texts.join(" + ");
-    const have = line.key in state.have ? state.have[line.key] : !!line.item.staple;
+    const have = line.key in state.have ? state.have[line.key] : isStaple(line.key);
     return { ...line, qty, buy, have };
   }).sort((a, b) =>
     AISLES.indexOf(a.item.aisle) - AISLES.indexOf(b.item.aisle) || a.item.name.localeCompare(b.item.name));
@@ -209,6 +251,8 @@ function viewRecipes(favsOnly) {
   setTop(`<h1 class="brand"><span class="logo" aria-hidden="true">${favsOnly ? "♥" : "🥘"}</span>${favsOnly ? "Favourites" : "Iron Kitchen"}</h1>`, true);
   setActionbar("");
   const f = state.filters;
+  if (!MEALS.includes(f.meal)) f.meal = "All";
+  for (const t of f.toggles) if (!TOGGLES.some(x => x.id === t)) f.toggles.delete(t);
   const q = f.q.trim().toLowerCase();
   let list = RECIPES.filter(r =>
     (!favsOnly || state.favs.has(r.id)) &&
@@ -229,11 +273,14 @@ function viewRecipes(favsOnly) {
   const lede = favsOnly ? "" : `<p class="lede"><b>What's cooking?</b>Iron-rich meals and snacks for little ones.</p>`;
   $("#app").innerHTML = `
     ${lede}
+    ${favsOnly ? "" : ironCard()}
     <div class="searchwrap"><input class="search" type="search" placeholder="Search recipes or ingredients" value="${esc(f.q)}" id="search" aria-label="Search"></div>
     <div class="chips" role="group" aria-label="Meal">${MEALS.map(m =>
       `<button class="chip" data-meal="${m}" aria-pressed="${f.meal === m}">${MEAL_ICON[m] ? MEAL_ICON[m] + " " : ""}${m}</button>`).join("")}</div>
     <div class="chips" role="group" aria-label="Filters">${TOGGLES.map(t =>
       `<button class="chip" data-toggle="${t.id}" aria-pressed="${f.toggles.has(t.id)}">${t.label}</button>`).join("")}</div>
+    ${f.meal !== "All" || f.toggles.size ? `<p class="small" style="margin:-4px 4px 4px">Showing: ${esc([f.meal !== "All" ? f.meal : "", ...TOGGLES.filter(t => f.toggles.has(t.id)).map(t => t.label)].filter(Boolean).join(" · "))}
+      <button class="linkbtn" data-clear-filters style="min-height:32px;padding:4px 6px">Clear</button></p>` : ""}
     ${tips}
     ${list.map(recipeCard).join("")}
     ${empty}`;
@@ -247,6 +294,24 @@ function viewRecipes(favsOnly) {
   });
 }
 
+function ironCard() {
+  const entries = ironToday(), total = ironTotal(), goal = state.ironGoal;
+  const pct = Math.min(100, Math.round((total / goal) * 100));
+  const met = total >= goal;
+  return `<section class="card iron-card${met ? " met" : ""}">
+    <div class="row">
+      <h4>💪 Iron today</h4>
+      <button class="linkbtn goalbtn" data-iron-goal aria-label="Change daily goal">Goal ${goal} mg · age ${goal === 7 ? "1–3" : "4–8"}</button>
+    </div>
+    <div class="iron-num"><b>${total}</b> / ${goal} mg${met ? " · goal reached 🎉" : ""}</div>
+    <div class="bar" role="progressbar" aria-label="Iron eaten today" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${total}"><span style="width:${pct}%"></span></div>
+    ${entries.length
+      ? `<div class="chips wrapchips">${entries.map((e, i) =>
+          `<button class="chip mini" data-iron-del="${i}" aria-label="Remove ${esc(e.name)}">${esc(e.name)} · ${e.mg} mg ✕</button>`).join("")}</div>`
+      : `<p class="small" style="margin:8px 0 0">After a meal, open the recipe and tap <b>Ate this</b>.</p>`}
+  </section>`;
+}
+
 function viewDetail(id) {
   const r = byId[id];
   if (!r) { location.hash = "#/"; return; }
@@ -255,6 +320,7 @@ function viewDetail(id) {
   const factor = servings / r.servings;
   const n = r.nutrition || {};
   const fav = state.favs.has(r.id), on = r.id in state.plan;
+  const done = state.doneSteps[id] ||= new Set();
 
   setTop(`<button class="iconbtn" data-back aria-label="Back">←</button><h1>${esc(r.name)}</h1>
     <button class="iconbtn fav" data-fav="${r.id}" aria-pressed="${fav}" aria-label="Favourite">${fav ? "♥" : "♡"}</button>`);
@@ -281,13 +347,18 @@ function viewDetail(id) {
     nutritionHtml = `<p class="note" style="margin:0">${esc(n.note || "No nutrition data.")}</p>`;
   }
 
-  $("#app").innerHTML = `<div class="detail">
+  $("#app").innerHTML = `<div class="detail${state.cookMode ? " cooking" : ""}">
     <div class="hero">${thumb(r)}<div>
       <h2>${esc(r.name)}</h2>
       <div class="meta">${esc(r.meal)} · ${esc(r.time)}</div>
     </div></div>
     <div class="pills">${ironPill(r)}${vcPill(r)}${r.tags.map(t => `<span class="pill">${TAG_LABEL[t] || t}</span>`).join("")}</div>
     <p class="small">Allergens: ${r.allergens.length ? esc(r.allergens.join(", ")) : "none of the priority allergens"}</p>
+    ${kidIronOf(r) !== null ? (() => {
+      const times = ironToday().filter(e => e.id === r.id).length;
+      return `<button class="atebtn" data-ate="${r.id}">🍽️ Ate this <span>+${kidIronOf(r)} mg iron</span></button>
+        <p class="small" style="margin:6px 2px 0">One toddler portion (${esc(r.kidPortionLabel)})${times ? ` · logged ${times}× today` : ""}. Today: ${ironTotal()} / ${state.ironGoal} mg.</p>`;
+    })() : ""}
 
     <section class="card section">
       <div class="row"><h4 style="margin:0">Ingredients</h4>
@@ -303,8 +374,11 @@ function viewDetail(id) {
     </section>
 
     <section class="card section">
-      <h4>Method <span class="small">(tap a step when it's done)</span></h4>
-      <ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
+      <div class="row" style="margin-bottom:4px"><h4 style="margin:0">Method</h4>
+        ${canWake ? `<button class="cooktoggle" data-cook aria-pressed="${state.cookMode}">🔆 ${state.cookMode ? "Screen stays on" : "Keep screen on"}</button>` : ""}
+      </div>
+      <p class="small" style="margin:0 0 6px">Tap a step when it's done.</p>
+      <ol class="steps">${r.steps.map((s, i) => `<li data-step="${i}"${done.has(i) ? ' class="done"' : ""}>${esc(s)}</li>`).join("")}</ol>
     </section>
 
     <section class="kid"><strong>🧒 For the kids:</strong> ${esc(r.kidNotes)}</section>
@@ -347,6 +421,7 @@ function viewList() {
     </div>`;
   }).join("")}</div>
   ${keepCard()}
+  ${staplesCard(list)}
   <p class="small" style="margin:12px 4px 0">Tap anything you already have. Ticked items are left out when you copy or share. Pantry staples start ticked.</p>`;
 
   let aisle = "";
@@ -375,7 +450,17 @@ function viewList() {
   }
 }
 
-const KEEP_RE = /^https:\/\/keep\.google\.com\/\S+$/;
+function staplesCard(list) {
+  const items = [...list].sort((a, b) => a.item.name.localeCompare(b.item.name));
+  return `<details class="card fold staples"${state.staplesOpen ? " open" : ""}>
+    <summary>🧂 Always have at home</summary>
+    <p class="small" style="margin:0 0 8px">Pick what you keep stocked. These start ticked on every new list.</p>
+    <div class="chips wrapchips">${items.map(l =>
+      `<button class="chip mini" data-staple="${l.key}" aria-pressed="${isStaple(l.key)}">${esc(l.item.name)}</button>`).join("")}</div>
+  </details>`;
+}
+
+const KEEP_RE =/^https:\/\/keep\.google\.com\/\S+$/;
 function keepCard() {
   if (state.keepUrl && !state.keepEditing) {
     return `<div class="card section" style="margin-top:12px;display:flex;align-items:center;gap:8px">
@@ -401,6 +486,7 @@ function keepCard() {
 function render() {
   const h = location.hash || "#/";
   let nav = "recipes";
+  if (state.cookMode && !h.startsWith("#/r/")) setCookMode(false);
   if (h.startsWith("#/r/")) { viewDetail(decodeURIComponent(h.slice(4))); nav = ""; }
   else if (h === "#/fav") { viewRecipes(true); nav = "fav"; }
   else if (h === "#/list") { viewList(); nav = "list"; }
@@ -477,12 +563,29 @@ document.addEventListener("click", async e => {
     state.have[d.have] = !(row && row.have);
     save(); render();
   } else if (d.meal) {
-    state.filters.meal = d.meal; render();
+    state.filters.meal = d.meal; save(); render();
   } else if (d.toggle) {
     const s = state.filters.toggles;
-    s.has(d.toggle) ? s.delete(d.toggle) : s.add(d.toggle); render();
+    s.has(d.toggle) ? s.delete(d.toggle) : s.add(d.toggle); save(); render();
   } else if ("clearFilters" in d) {
-    state.filters = { meal: "All", toggles: new Set(), q: "" }; render();
+    state.filters = { meal: "All", toggles: new Set(), q: "" }; save(); render();
+  } else if (d.ate) {
+    const r = byId[d.ate], mg = kidIronOf(r);
+    ironToday().push({ id: r.id, name: r.name, mg }); save();
+    toast(`Logged ${mg} mg · ${ironTotal()} of ${state.ironGoal} mg today`); render();
+  } else if (d.ironDel !== undefined) {
+    ironToday().splice(Number(d.ironDel), 1); save(); render();
+  } else if ("ironGoal" in d) {
+    state.ironGoal = state.ironGoal === 7 ? 10 : 7; save(); render();
+    toast(`Daily goal: ${state.ironGoal} mg (age ${state.ironGoal === 7 ? "1–3" : "4–8"})`);
+  } else if (d.staple) {
+    const k = d.staple, now = !isStaple(k);
+    if (now === !!ITEMS[k].staple) delete state.staples[k]; else state.staples[k] = now;
+    delete state.have[k]; save(); render();
+    toast(now ? `${ITEMS[k].name} will start ticked` : `${ITEMS[k].name} is no longer an always-have`);
+  } else if ("cook" in d) {
+    await setCookMode(!state.cookMode); render();
+    if (state.cookMode) toast("Screen will stay on while this recipe is open.");
   } else if ("clearList" in d) {
     if (confirm("Clear all recipes from the shopping list?")) {
       state.plan = {}; state.have = {}; state.detailServings = {}; save(); render();
@@ -513,9 +616,15 @@ document.addEventListener("click", async e => {
   } else if ("back" in d) {
     history.length > 1 ? history.back() : (location.hash = "#/");
   } else if (t.matches("ol.steps li")) {
-    t.classList.toggle("done");
+    const set = state.doneSteps[location.hash.slice(4)] ||= new Set(), i = Number(d.step);
+    set.has(i) ? set.delete(i) : set.add(i);
+    t.classList.toggle("done", set.has(i));
   }
 });
+// Remember whether the "Always have at home" panel is open across re-renders.
+document.addEventListener("toggle", e => {
+  if (e.target.classList && e.target.classList.contains("staples")) state.staplesOpen = e.target.open;
+}, true);
 document.addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.id === "keepUrlInput") { e.preventDefault(); document.querySelector("[data-keep-save]").click(); return; }
   if ((e.key === "Enter" || e.key === " ") && e.target.dataset && e.target.dataset.have) {
