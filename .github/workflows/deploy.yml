@@ -1,5 +1,6 @@
 # Checks the recipe data, then publishes the site to GitHub Pages.
 # If the check fails, nothing is published and the live site stays as it was.
+# The app lives in the iron-kitchen/ folder of this repository.
 name: Check and deploy
 
 on:
@@ -26,11 +27,12 @@ jobs:
         with:
           node-version: 20
       - name: Check recipe data
-        run: node tools/check.js
+        run: node iron-kitchen/tools/check.js
       - name: Assemble site (app files only)
         run: |
           mkdir _site
-          cp -r index.html app.js sw.js manifest.webmanifest robots.txt icons data recipes _site/
+          cd iron-kitchen
+          cp -r index.html app.js sw.js manifest.webmanifest robots.txt icons data recipes ../_site/
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
