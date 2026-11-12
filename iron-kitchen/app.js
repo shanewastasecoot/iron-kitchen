@@ -15,6 +15,8 @@ const state = {
   favs: new Set(store.get("favs", [])),
   plan: store.get("plan", {}),          // { recipeId: servings }
   have: store.get("have", {}),          // { itemKey: true/false } overrides
+  keepUrl: store.get("keepUrl", ""),   // link to the family's shared Keep grocery note (this phone only)
+  keepEditing: false,
   filters: { meal: "All", toggles: new Set(), q: "" },
   detailServings: {},                   // recipeId -> servings shown on detail page
 };
@@ -118,15 +120,16 @@ function buildShoppingList() {
       }
     }
     const qty = texts.join(" + ") + (packText ? ` — ${packText}` : "");
+    const buy = packText || texts.join(" + ");
     const have = line.key in state.have ? state.have[line.key] : !!line.item.staple;
-    return { ...line, qty, have };
+    return { ...line, qty, buy, have };
   }).sort((a, b) =>
     AISLES.indexOf(a.item.aisle) - AISLES.indexOf(b.item.aisle) || a.item.name.localeCompare(b.item.name));
 }
 
 function shoppingText(list) {
   return list.filter(l => !l.have)
-    .map(l => `${l.item.name} — ${l.qty}${l.allOpt ? " (optional)" : ""}`)
+    .map(l => `${l.item.name} — ${l.buy}${l.allOpt ? " (optional)" : ""}`)
     .join("\n");
 }
 
@@ -315,7 +318,8 @@ function viewList() {
       <button class="iconbtn" data-remove="${id}" aria-label="Remove">✕</button>
     </div>`;
   }).join("")}</div>
-  <p class="small" style="margin:12px 4px 0">Tap anything you already have. Ticked items are left out when you share. Pantry staples start ticked.</p>`;
+  ${keepCard()}
+  <p class="small" style="margin:12px 4px 0">Tap anything you already have. Ticked items are left out when you copy or share. Pantry staples start ticked.</p>`;
 
   let aisle = "";
   for (const l of list) {
@@ -332,8 +336,37 @@ function viewList() {
   html += "</div><div class=\"spacer\"></div>";
   $("#app").innerHTML = html;
 
-  setActionbar(`<button class="btn" data-copy ${need ? "" : "disabled"}>Copy</button>
-    <button class="btn primary" data-share ${need ? "" : "disabled"}>Share to Keep (${need})</button>`);
+  if (state.keepUrl) {
+    const open = need
+      ? `<a class="btn primary" data-keep href="${esc(state.keepUrl)}" target="_blank" rel="noopener" style="display:grid;place-items:center;text-decoration:none;flex:2">Copy &amp; open note (${need})</a>`
+      : `<button class="btn primary" disabled style="flex:2">Copy &amp; open note (0)</button>`;
+    setActionbar(`<button class="btn" data-share ${need ? "" : "disabled"}>New note</button>${open}`);
+  } else {
+    setActionbar(`<button class="btn" data-copy ${need ? "" : "disabled"}>Copy</button>
+      <button class="btn primary" data-share ${need ? "" : "disabled"}>Share to Keep (${need})</button>`);
+  }
+}
+
+const KEEP_RE = /^https:\/\/keep\.google\.com\/\S+$/;
+function keepCard() {
+  if (state.keepUrl && !state.keepEditing) {
+    return `<div class="card section" style="margin-top:12px;display:flex;align-items:center;gap:8px">
+      <span style="flex:1">✓ Linked to your grocery note</span>
+      <button class="linkbtn" data-keep-edit>Change</button></div>`;
+  }
+  return `<div class="card section" style="margin-top:12px">
+    <h4>Add to your shared grocery note</h4>
+    <ol class="small" style="margin:0 0 10px;padding-left:18px">
+      <li>On a computer, open the note at keep.google.com.</li>
+      <li>Copy the address from the browser bar (it starts with <b>https://keep.google.com/</b>) and send it to this phone.</li>
+      <li>Paste it here. It is saved on this phone only.</li>
+    </ol>
+    <input class="search" id="keepUrlInput" type="url" inputmode="url" placeholder="https://keep.google.com/#LIST/…" value="${esc(state.keepUrl)}" style="margin:0 0 10px">
+    <div style="display:flex;gap:10px">
+      ${state.keepUrl ? `<button class="btn" data-keep-unlink>Unlink</button>` : ""}
+      <button class="btn primary" data-keep-save>Save link</button>
+    </div>
+  </div>`;
 }
 
 /* ---------- Router ---------- */
@@ -385,7 +418,7 @@ async function copyText(text) {
 }
 
 document.addEventListener("click", async e => {
-  const t = e.target.closest("button, [data-have], ol.steps li");
+  const t = e.target.closest("button, a[data-keep], [data-have], ol.steps li");
   if (!t) return;
   const d = t.dataset;
 
@@ -424,6 +457,20 @@ document.addEventListener("click", async e => {
     if (confirm("Clear all recipes from the shopping list?")) {
       state.plan = {}; state.have = {}; state.detailServings = {}; save(); render();
     }
+  } else if ("keep" in d) {
+    // Don't block the link: start the copy, let the browser open Keep.
+    copyText(shoppingText(buildShoppingList()));
+    toast("Copied. In Keep: tap + List item, long-press, Paste.");
+  } else if ("keepSave" in d) {
+    let v = ($("#keepUrlInput").value || "").trim();
+    if (v && !/^https?:\/\//.test(v)) v = "https://" + v;
+    if (!KEEP_RE.test(v)) { toast("That doesn't look like a keep.google.com link."); return; }
+    state.keepUrl = v; state.keepEditing = false; store.set("keepUrl", v);
+    toast("Grocery note linked."); render();
+  } else if ("keepEdit" in d) {
+    state.keepEditing = true; render();
+  } else if ("keepUnlink" in d) {
+    state.keepUrl = ""; state.keepEditing = false; store.set("keepUrl", ""); render();
   } else if ("share" in d) {
     shareList();
   } else if ("copy" in d) {
@@ -436,6 +483,7 @@ document.addEventListener("click", async e => {
   }
 });
 document.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.id === "keepUrlInput") { e.preventDefault(); document.querySelector("[data-keep-save]").click(); return; }
   if ((e.key === "Enter" || e.key === " ") && e.target.dataset && e.target.dataset.have) {
     e.preventDefault(); e.target.click();
   }
