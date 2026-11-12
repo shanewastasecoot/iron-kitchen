@@ -17,6 +17,7 @@ const state = {
   have: store.get("have", {}),          // { itemKey: true/false } overrides
   keepUrl: store.get("keepUrl", ""),   // link to the family's shared Keep grocery note (this phone only)
   keepEditing: false,
+  theme: store.get("theme", "auto"),    // "auto" | "light" | "dark" (this phone only)
   filters: { meal: "All", toggles: new Set(), q: "" },
   detailServings: {},                   // recipeId -> servings shown on detail page
 };
@@ -144,7 +145,27 @@ function updateBadge() {
   const n = Object.keys(state.plan).length, b = $("#listBadge");
   b.hidden = !n; b.textContent = n;
 }
-function setTop(html) { $("#topbar").innerHTML = html; }
+function setTop(html, withTheme) { $("#topbar").innerHTML = html + (withTheme ? themeBtn() : ""); }
+
+/* ---------- Light / dark theme ---------- */
+const THEMES = { auto: { ico: "🌓", label: "Theme: match phone" }, light: { ico: "☀️", label: "Theme: light" }, dark: { ico: "🌙", label: "Theme: dark" } };
+const darkQuery = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+function themeBtn() {
+  const t = THEMES[state.theme] || THEMES.auto;
+  return `<button class="iconbtn" data-theme-cycle aria-label="${t.label} (tap to change)" title="${t.label}">${t.ico}</button>`;
+}
+function applyTheme() {
+  const root = document.documentElement;
+  if (state.theme === "auto") delete root.dataset.theme; else root.dataset.theme = state.theme;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = getComputedStyle(root).getPropertyValue("--bg").trim() || "#fbf5ea";
+}
+if (darkQuery) darkQuery.addEventListener("change", applyTheme);
+applyTheme();
+
+const MEAL_ICON = { Breakfast: "🥣", "Lunch / dinner": "🍲", Snack: "🍎" };
+const MEAL_CLASS = { Breakfast: "breakfast", "Lunch / dinner": "main", Snack: "snack" };
+const thumb = r => `<span class="thumb ${MEAL_CLASS[r.meal] || "main"}" aria-hidden="true">${MEAL_ICON[r.meal] || "🍽️"}</span>`;
 function setActionbar(html) { $("#actionbar").innerHTML = html ? `<div class="actionbar"><div class="wrap">${html}</div></div>` : ""; }
 
 const TAG_LABEL = { "no-cook": "No-cook", freezer: "Freezer-friendly", quick: "Quick" };
@@ -170,9 +191,12 @@ function recipeCard(r) {
   const fav = state.favs.has(r.id), on = r.id in state.plan;
   return `<article class="card rcard">
     <a class="main" href="#/r/${r.id}">
-      <h3>${esc(r.name)}</h3>
-      <div class="meta">${esc(r.meal)} · ${esc(r.time)}</div>
-      <div class="pills">${ironPill(r)}${vcPill(r)}${r.tags.map(t => `<span class="pill">${TAG_LABEL[t] || t}</span>`).join("")}</div>
+      ${thumb(r)}
+      <div class="body">
+        <h3>${esc(r.name)}</h3>
+        <div class="meta">${esc(r.meal)} · ${esc(r.time)}</div>
+        <div class="pills">${ironPill(r)}${vcPill(r)}${r.tags.map(t => `<span class="pill">${TAG_LABEL[t] || t}</span>`).join("")}</div>
+      </div>
     </a>
     <div class="side">
       <button class="iconbtn fav" data-fav="${r.id}" aria-pressed="${fav}" aria-label="Favourite">${fav ? "♥" : "♡"}</button>
@@ -182,7 +206,7 @@ function recipeCard(r) {
 }
 
 function viewRecipes(favsOnly) {
-  setTop(`<h1>${favsOnly ? "Favourites" : "Iron Kitchen"}</h1>`);
+  setTop(`<h1 class="brand"><span class="logo" aria-hidden="true">${favsOnly ? "♥" : "🥘"}</span>${favsOnly ? "Favourites" : "Iron Kitchen"}</h1>`, true);
   setActionbar("");
   const f = state.filters;
   const q = f.q.trim().toLowerCase();
@@ -192,20 +216,22 @@ function viewRecipes(favsOnly) {
     [...f.toggles].every(t => TOGGLES.find(x => x.id === t).test(r)) &&
     (!q || (r.name + " " + r.ingredients.map(i => i.t).join(" ")).toLowerCase().includes(q)));
 
-  const tips = favsOnly ? "" : `<details class="card tips"><summary>Iron tips for toddlers</summary>
+  const tips = favsOnly ? "" : `<details class="card tips"><summary>💡 Iron tips for toddlers</summary>
     <ul>${IRON_TIPS.map(t => `<li>${esc(t)}</li>`).join("")}</ul></details>`;
 
   let empty = "";
   if (!list.length) {
     empty = favsOnly && !state.favs.size
-      ? `<div class="empty">No favourites yet.<br>Tap ♡ on a recipe to save it here.</div>`
-      : `<div class="empty">No recipes match.<br><button class="linkbtn" data-clear-filters>Clear filters</button></div>`;
+      ? `<div class="empty"><span class="big">💛</span>No favourites yet.<br>Tap ♡ on a recipe to save it here.</div>`
+      : `<div class="empty"><span class="big">🥄</span>No recipes match.<br><button class="linkbtn" data-clear-filters>Clear filters</button></div>`;
   }
 
+  const lede = favsOnly ? "" : `<p class="lede"><b>What's cooking?</b>Iron-rich meals and snacks for little ones.</p>`;
   $("#app").innerHTML = `
-    <input class="search" type="search" placeholder="Search recipes or ingredients" value="${esc(f.q)}" id="search" aria-label="Search">
+    ${lede}
+    <div class="searchwrap"><input class="search" type="search" placeholder="Search recipes or ingredients" value="${esc(f.q)}" id="search" aria-label="Search"></div>
     <div class="chips" role="group" aria-label="Meal">${MEALS.map(m =>
-      `<button class="chip" data-meal="${m}" aria-pressed="${f.meal === m}">${m}</button>`).join("")}</div>
+      `<button class="chip" data-meal="${m}" aria-pressed="${f.meal === m}">${MEAL_ICON[m] ? MEAL_ICON[m] + " " : ""}${m}</button>`).join("")}</div>
     <div class="chips" role="group" aria-label="Filters">${TOGGLES.map(t =>
       `<button class="chip" data-toggle="${t.id}" aria-pressed="${f.toggles.has(t.id)}">${t.label}</button>`).join("")}</div>
     ${tips}
@@ -256,8 +282,10 @@ function viewDetail(id) {
   }
 
   $("#app").innerHTML = `<div class="detail">
-    <h2>${esc(r.name)}</h2>
-    <div class="meta">${esc(r.meal)} · ${esc(r.time)}</div>
+    <div class="hero">${thumb(r)}<div>
+      <h2>${esc(r.name)}</h2>
+      <div class="meta">${esc(r.meal)} · ${esc(r.time)}</div>
+    </div></div>
     <div class="pills">${ironPill(r)}${vcPill(r)}${r.tags.map(t => `<span class="pill">${TAG_LABEL[t] || t}</span>`).join("")}</div>
     <p class="small">Allergens: ${r.allergens.length ? esc(r.allergens.join(", ")) : "none of the priority allergens"}</p>
 
@@ -279,7 +307,7 @@ function viewDetail(id) {
       <ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
     </section>
 
-    <section class="kid"><strong>For the kids:</strong> ${esc(r.kidNotes)}</section>
+    <section class="kid"><strong>🧒 For the kids:</strong> ${esc(r.kidNotes)}</section>
 
     <section class="card section" style="margin-top:12px">
       <h4>Nutrition</h4>
@@ -293,16 +321,16 @@ function viewDetail(id) {
   </div>`;
 
   setActionbar(on
-    ? `<button class="btn" data-remove="${r.id}">Remove from list</button><a class="btn done" href="#/list" style="display:grid;place-items:center;text-decoration:none">✓ On list (${state.plan[r.id]}) — view</a>`
+    ? `<button class="btn" data-remove="${r.id}">Remove from list</button><a class="btn done" href="#/list" style="display:grid;place-items:center;text-decoration:none">✓ On list · View</a>`
     : `<button class="btn primary" data-add-detail="${r.id}">+ Add ${servings} ${esc(r.servingLabel)} to shopping list</button>`);
 }
 
 function viewList() {
-  setTop(`<h1>Shopping list</h1>${Object.keys(state.plan).length ? `<button class="linkbtn" data-clear-list>Clear</button>` : ""}`);
+  setTop(`<h1 class="brand"><span class="logo" aria-hidden="true">🛒</span>Shopping list</h1>${Object.keys(state.plan).length ? `<button class="linkbtn" data-clear-list>Clear</button>` : ""}`, true);
   const ids = Object.keys(state.plan);
   if (!ids.length) {
     setActionbar("");
-    $("#app").innerHTML = `<div class="empty">Your list is empty.<br>Tap <b>+ List</b> on any recipe to add it.<br><br><a href="#/">Browse recipes</a></div>`;
+    $("#app").innerHTML = `<div class="empty"><span class="big">🧺</span>Your list is empty.<br>Tap <b>+ List</b> on any recipe to add it.<br><br><a href="#/">Browse recipes</a></div>`;
     return;
   }
   const list = buildShoppingList();
@@ -361,7 +389,7 @@ function keepCard() {
       <li>Copy the address from the browser bar (it starts with <b>https://keep.google.com/</b>) and send it to this phone.</li>
       <li>Paste it here. It is saved on this phone only.</li>
     </ol>
-    <input class="search" id="keepUrlInput" type="url" inputmode="url" placeholder="https://keep.google.com/#LIST/…" value="${esc(state.keepUrl)}" style="margin:0 0 10px">
+    <input class="search plain" id="keepUrlInput" type="url" inputmode="url" placeholder="https://keep.google.com/#LIST/…" value="${esc(state.keepUrl)}" style="margin:0 0 10px">
     <div style="display:flex;gap:10px">
       ${state.keepUrl ? `<button class="btn" data-keep-unlink>Unlink</button>` : ""}
       <button class="btn primary" data-keep-save>Save link</button>
@@ -382,9 +410,11 @@ function render() {
 }
 let lastHash = location.hash;
 window.addEventListener("hashchange", () => {
-  if (location.hash !== lastHash) window.scrollTo(0, 0);
+  const moved = location.hash !== lastHash;
+  if (moved) window.scrollTo(0, 0);
   lastHash = location.hash;
   render();
+  if (moved) { const a = $("#app"); a.classList.remove("enter"); void a.offsetWidth; a.classList.add("enter"); }
 });
 
 /* ---------- Actions (one delegated listener) ---------- */
@@ -476,6 +506,10 @@ document.addEventListener("click", async e => {
   } else if ("copy" in d) {
     await copyText(shoppingText(buildShoppingList()));
     toast("Copied. In Keep: paste, then ⋮ → Show checkboxes.");
+  } else if ("themeCycle" in d) {
+    state.theme = { auto: "light", light: "dark", dark: "auto" }[state.theme] || "auto";
+    store.set("theme", state.theme); applyTheme(); render();
+    toast(THEMES[state.theme].label);
   } else if ("back" in d) {
     history.length > 1 ? history.back() : (location.hash = "#/");
   } else if (t.matches("ol.steps li")) {

@@ -1,7 +1,7 @@
 // Network-first service worker: always tries for fresh files, falls back to
 // the cached copy when offline (e.g. in the grocery store).
 // Bump VERSION if you ever need to force-clear old caches.
-const VERSION = "ik-v3";
+const VERSION = "ik-v4";
 const SHELL = ["./", "index.html", "app.js", "data/catalog.js", "recipes/index.js", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
